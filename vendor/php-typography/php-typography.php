@@ -1946,7 +1946,7 @@ class phpTypography {
 		if(!isset($this->settings["styleInitialQuotes"]) || !$this->settings["styleInitialQuotes"] || !isset($this->settings["initialQuoteTags"]) || !$this->settings["initialQuoteTags"]) return $parsedHTMLtoken;
 	
 		if(!isset($parsedHTMLtoken["prevChr"]) || $parsedHTMLtoken["prevChr"] == NULL) { // we have the first text in a block level element
-
+		    $encodings = array("ASCII","UTF-8", "ISO-8859-1");
 			$e = mb_detect_encoding($parsedHTMLtoken["value"]."a", $encodings);// ."a" is a hack; see http://www.php.net/manual/en/function.mb-detect-encoding.php#81936
 			if(!isset($e) || $e == "") $e = "ASCII";
 
