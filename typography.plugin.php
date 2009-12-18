@@ -256,8 +256,8 @@ HELP;
 
     public function action_init()
     {
-        include 'lib/php-typography/php-typography.php';
-        include 'lib/TypographyFormat.php';
+        include 'vendor/php-typography/php-typography.php';
+        include 'vendor/TypographyFormat.php';
 
         $opts = Options::get_group('typography');
 
