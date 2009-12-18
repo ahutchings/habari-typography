@@ -218,7 +218,7 @@ HELP;
     public function filter_post_title_out($title)
     {
         if (Options::get('typography__title_case')) {
-            $title = Typogrify::title_case($title);
+            $title = TypographyFormat::titleCase($title);
         }
 
         // @todo work out which phpTypography filters won't break titles
@@ -257,7 +257,7 @@ HELP;
     public function action_init()
     {
         include 'lib/php-typography/php-typography.php';
-        include 'lib/typogrify.php';
+        include 'lib/TypographyFormat.php';
 
         $opts = Options::get_group('typography');
 
