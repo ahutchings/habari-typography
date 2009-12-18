@@ -2,7 +2,7 @@
 /*
 	Project: PHP Typography
 	Project URI: http://kingdesk.com/projects/php-tyography/
-	Version: 1.12
+	Version: 1.19
 
 
 	Copyright 2009, KINGdesk, LLC. Licensed under the GNU General Public License 2.0. If you use, modify and/or redistribute this software, you must leave the KINGdesk, LLC copyright information, the request for a link to http://kingdesk.com, and the web design services contact information unchanged. If you redistribute this software, or any derivative, it must be released under the GNU General Public License 2.0. This program is distributed without warranty (implied or otherwise) of suitability for any particular purpose. See the GNU General Public License for full license terms <http://creativecommons.org/licenses/GPL/2.0/>.
@@ -63,6 +63,10 @@ class phpTypography {
 		$this->chr["serviceMark"] = $this->uchr(8480);
 		$this->chr["tradeMark"] = $this->uchr(8482);
 		$this->chr["minus"] = $this->uchr(8722);
+		$this->chr["leftCornerBracket"] = $this->uchr(12300);
+		$this->chr["rightCornerBracket"] = $this->uchr(12301);
+		$this->chr["leftWhiteCornerBracket"] = $this->uchr(12302);
+		$this->chr["rightWhiteCornerBracket"] = $this->uchr(12303);
 
 		if($setDefaults) {
 			$this->set_defaults();
@@ -80,9 +84,14 @@ class phpTypography {
 		
 		//smart characters
 		$this->set_smart_quotes();
-		$this->set_smart_quotes_language();
+		//DEPRECIATED $this->set_smart_quotes_language();
+		$this->set_smart_quotes_primary(); /* added in version 1.15 */
+		$this->set_smart_quotes_secondary(); /* added in version 1.15 */
 		$this->set_smart_dashes();
 		$this->set_smart_ellipses();
+		$this->set_smart_diacritics();
+		$this->set_diacritic_language();
+		$this->set_diacritic_custom_replacements();
 		$this->set_smart_marks();
 		$this->set_smart_ordinal_suffix();
 		$this->set_smart_math();
@@ -103,6 +112,7 @@ class phpTypography {
 		$this->set_url_wrap();
 		$this->set_email_wrap();
 		$this->set_min_after_url_wrap();
+		$this->set_space_collapse();
 		
 		//character styling
 		$this->set_style_ampersands();
@@ -179,7 +189,8 @@ class phpTypography {
 		$this->settings["smartQuotes"] = $on;
 		return TRUE;
 	}
-	
+
+	// DEPRECIATED
 	// language preferences for curling quotemarks
 	// allowed values for $lang
 	//		"en" = English style quotes, replaces "foo" with “foo”
@@ -212,6 +223,150 @@ class phpTypography {
 		return TRUE;
 	}
 
+
+	// Primary quotemarks style
+	// allowed values for $style
+	//	"doubleCurled" => "&ldquo;foo&rdquo;",
+	//	"doubleCurledReversed" => "&rdquo;foo&rdquo;",
+	//	"doubleLow9" => "&bdquo;foo&rdquo;",
+	//	"doubleLow9Reversed" => "&bdquo;foo&ldquo;",
+	//	"singleCurled" => "&lsquo;foo&rsquo;",
+	//	"singleCurledReversed" => "&rsquo;foo&rsquo;",
+	//	"singleLow9" => "&sbquo;foo&rsquo;",
+	//	"singleLow9Reversed" => "&sbquo;foo&lsquo;",
+	//	"doubleGuillemetsFrench" => "&laquo;&nbsp;foo&nbsp;&raquo;",
+	//	"doubleGuillemets" => "&laquo;foo&raquo;",
+	//	"doubleGuillemetsReversed" => "&raquo;foo&laquo;",
+	//	"singleGuillemets" => "&lsaquo;foo&rsaquo;",
+	//	"singleGuillemetsReversed" => "&rsaquo;foo&lsaquo;",
+	//	"cornerBrackets" => "&#x300c;foo&#x300d;",
+	//	"whiteCornerBracket" => "&#x300e;foo&#x300f;",
+	function set_smart_quotes_primary($style = "doubleCurled") {
+		if($style == "doubleCurled") {
+			$this->chr["doubleQuoteOpen"] = $this->uchr(8220);
+			$this->chr["doubleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleCurledReversed") {
+			$this->chr["doubleQuoteOpen"] = $this->uchr(8221);
+			$this->chr["doubleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleLow9") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["doubleLow9Quote"];
+			$this->chr["doubleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleLow9Reversed") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["doubleLow9Quote"];
+			$this->chr["doubleQuoteClose"] = $this->uchr(8220);
+		} elseif($style == "singleCurled") {
+			$this->chr["doubleQuoteOpen"] = $this->uchr(8216);
+			$this->chr["doubleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleCurledReversed") {
+			$this->chr["doubleQuoteOpen"] = $this->uchr(8217);
+			$this->chr["doubleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleLow9") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["singleLow9Quote"];
+			$this->chr["doubleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleLow9Reversed") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["singleLow9Quote"];
+			$this->chr["doubleQuoteClose"] = $this->uchr(8216);
+		} elseif($style == "doubleGuillemetsFrench") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["guillemetOpen"].$this->chr["noBreakSpace"];
+			$this->chr["doubleQuoteClose"] = $this->chr["noBreakSpace"].$this->chr["guillemetClose"];
+		} elseif($style == "doubleGuillemets") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["guillemetOpen"];
+			$this->chr["doubleQuoteClose"] = $this->chr["guillemetClose"];
+		} elseif($style == "doubleGuillemetsReversed") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["guillemetClose"];
+			$this->chr["doubleQuoteClose"] = $this->chr["guillemetOpen"];
+		} elseif($style == "singleGuillemets") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["singleAngleQuoteOpen"];
+			$this->chr["doubleQuoteClose"] = $this->chr["singleAngleQuoteClose"];
+		} elseif($style == "singleGuillemetsReversed") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["singleAngleQuoteClose"];
+			$this->chr["doubleQuoteClose"] = $this->chr["singleAngleQuoteOpen"];
+		} elseif($style == "cornerBrackets") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["leftCornerBracket"];
+			$this->chr["doubleQuoteClose"] = $this->chr["rightCornerBracket"];
+		} elseif($style == "whiteCornerBracket") {
+			$this->chr["doubleQuoteOpen"] = $this->chr["leftWhiteCornerBracket"];
+			$this->chr["doubleQuoteClose"] = $this->chr["rightWhiteCornerBracket"];
+		} else {
+			$this->chr["doubleQuoteOpen"] = $this->uchr(8220);
+			$this->chr["doubleQuoteClose"] = $this->uchr(8221);
+		}
+		return TRUE;
+	}
+	// Secondary quotemarks style
+	// allowed values for $style
+	//	"doubleCurled" => "&ldquo;foo&rdquo;",
+	//	"doubleCurledReversed" => "&rdquo;foo&rdquo;",
+	//	"doubleLow9" => "&bdquo;foo&rdquo;",
+	//	"doubleLow9Reversed" => "&bdquo;foo&ldquo;",
+	//	"singleCurled" => "&lsquo;foo&rsquo;",
+	//	"singleCurledReversed" => "&rsquo;foo&rsquo;",
+	//	"singleLow9" => "&sbquo;foo&rsquo;",
+	//	"singleLow9Reversed" => "&sbquo;foo&lsquo;",
+	//	"doubleGuillemetsFrench" => "&laquo;&nbsp;foo&nbsp;&raquo;",
+	//	"doubleGuillemets" => "&laquo;foo&raquo;",
+	//	"doubleGuillemetsReversed" => "&raquo;foo&laquo;",
+	//	"singleGuillemets" => "&lsaquo;foo&rsaquo;",
+	//	"singleGuillemetsReversed" => "&rsaquo;foo&lsaquo;",
+	//	"cornerBrackets" => "&#x300c;foo&#x300d;",
+	//	"whiteCornerBracket" => "&#x300e;foo&#x300f;",
+	function set_smart_quotes_secondary($style = "singleCurled") {
+		if($style == "doubleCurled") {
+			$this->chr["singleQuoteOpen"] = $this->uchr(8220);
+			$this->chr["singleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleCurledReversed") {
+			$this->chr["singleQuoteOpen"] = $this->uchr(8221);
+			$this->chr["singleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleLow9") {
+			$this->chr["singleQuoteOpen"] = $this->chr["doubleLow9Quote"];
+			$this->chr["singleQuoteClose"] = $this->uchr(8221);
+		} elseif($style == "doubleLow9Reversed") {
+			$this->chr["singleQuoteOpen"] = $this->chr["doubleLow9Quote"];
+			$this->chr["singleQuoteClose"] = $this->uchr(8220);
+		} elseif($style == "singleCurled") {
+			$this->chr["singleQuoteOpen"] = $this->uchr(8216);
+			$this->chr["singleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleCurledReversed") {
+			$this->chr["singleQuoteOpen"] = $this->uchr(8217);
+			$this->chr["singleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleLow9") {
+			$this->chr["singleQuoteOpen"] = $this->chr["singleLow9Quote"];
+			$this->chr["singleQuoteClose"] = $this->uchr(8217);
+		} elseif($style == "singleLow9Reversed") {
+			$this->chr["singleQuoteOpen"] = $this->chr["singleLow9Quote"];
+			$this->chr["singleQuoteClose"] = $this->uchr(8216);
+		} elseif($style == "doubleGuillemetsFrench") {
+			$this->chr["singleQuoteOpen"] = $this->chr["guillemetOpen"].$this->chr["noBreakSpace"];
+			$this->chr["singleQuoteClose"] = $this->chr["noBreakSpace"].$this->chr["guillemetClose"];
+		} elseif($style == "doubleGuillemets") {
+			$this->chr["singleQuoteOpen"] = $this->chr["guillemetOpen"];
+			$this->chr["singleQuoteClose"] = $this->chr["guillemetClose"];
+		} elseif($style == "doubleGuillemetsReversed") {
+			$this->chr["singleQuoteOpen"] = $this->chr["guillemetClose"];
+			$this->chr["singleQuoteClose"] = $this->chr["guillemetOpen"];
+		} elseif($style == "singleGuillemets") {
+			$this->chr["singleQuoteOpen"] = $this->chr["singleAngleQuoteOpen"];
+			$this->chr["singleQuoteClose"] = $this->chr["singleAngleQuoteClose"];
+		} elseif($style == "singleGuillemetsReversed") {
+			$this->chr["singleQuoteOpen"] = $this->chr["singleAngleQuoteClose"];
+			$this->chr["singleQuoteClose"] = $this->chr["singleAngleQuoteOpen"];
+		} elseif($style == "cornerBrackets") {
+			$this->chr["singleQuoteOpen"] = $this->chr["leftCornerBracket"];
+			$this->chr["singleQuoteClose"] = $this->chr["rightCornerBracket"];
+		} elseif($style == "whiteCornerBracket") {
+			$this->chr["singleQuoteOpen"] = $this->chr["leftWhiteCornerBracket"];
+			$this->chr["singleQuoteClose"] = $this->chr["rightWhiteCornerBracket"];
+		} else {
+			$this->chr["singleQuoteOpen"] = $this->uchr(8216);
+			$this->chr["singleQuoteClose"] = $this->uchr(8217);
+		}
+		return TRUE;
+	}
+
+
+
+
+
 	// replaces "a--a" with En Dash " -- " and "---" with Em Dash
 	function set_smart_dashes($on = TRUE) {
 		$this->settings["smartDashes"] = $on;
@@ -223,6 +378,65 @@ class phpTypography {
 		$this->settings["smartEllipses"] = $on;
 		return TRUE;
 	}
+	
+	// replaces "creme brulee" with "crème brûlée"
+	function set_smart_diacritics($on = TRUE) {
+		$this->settings["smartDiacritics"] = $on;
+		return TRUE;
+	}
+
+	// defines hyphenation language for text
+	function set_diacritic_language($lang = "en-US") {
+		if (isset($this->settings["diacriticLanguage"]) &&	$this->settings["diacriticLanguage"] == $lang)
+			return TRUE;
+		
+		$this->settings["diacriticLanguage"] = $lang;
+
+		if(file_exists(dirname(__FILE__).'/diacritics/'.$this->settings["diacriticLanguage"].'.php')) {
+			include('diacritics/'.$this->settings["diacriticLanguage"].'.php');
+		} else {
+			include('diacritics/en-US.php');
+		}
+		$this->settings["diacriticWords"] = $diacriticWords;
+		
+		return TRUE;
+	}
+
+	// $customReplacements must be
+	//		an array formatted array(needle=>replacement, needle=>replacement...), or
+	//		a string formatted `"needle"=>"replacement","needle"=>"replacement",...`
+	function set_diacritic_custom_replacements($customReplacements = array()) {
+		if(!is_array($customReplacements)) 
+			$customReplacementChunks = preg_split("/,/", $customReplacements, -1, PREG_SPLIT_NO_EMPTY);
+			$customReplacements = array();
+			foreach($customReplacementChunks as $customReplacementChunk) {
+				//account for single and double quotes
+				preg_match("/(?:\")([^\"]+)(?:\"\s*=>)/", $customReplacementChunk, $doubleQuoteKeyMatch);
+				preg_match("/(?:')([^']+)(?:'\s*=>)/", $customReplacementChunk, $singleQuoteKeyMatch);
+				preg_match("/(?:=>\s*\")([^\"]+)(?:\")/", $customReplacementChunk, $doubleQuoteValueMatch);
+				preg_match("/(?:=>\s*')([^']+)(?:')/", $customReplacementChunk, $singleQuoteValueMatch);
+
+				if( isset($doubleQuoteKeyMatch[1]) && ( $doubleQuoteKeyMatch[1] != "" ) ) {
+					$key = $doubleQuoteKeyMatch[1];
+				} elseif( isset($singleQuoteKeyMatch[1]) && ( $singleQuoteKeyMatch[1] != "" ) ) {
+					$key = $singleQuoteKeyMatch[1];
+				}
+				
+				if( isset($doubleQuoteValueMatch[1]) && ( $doubleQuoteValueMatch[1] != "" ) ) {
+					$value = $doubleQuoteValueMatch[1];
+				} elseif( isset($singleQuoteValueMatch[1]) && ( $singleQuoteValueMatch[1] != "" ) ) {
+					$value = $singleQuoteValueMatch[1];
+				}
+				
+				if( isset($key) && isset($value) ) {
+					$customReplacements[strip_tags(trim($key))] = strip_tags(trim($value));
+				}
+			}
+			
+		$this->settings["diacriticCustomReplacements"] = $customReplacements;
+		return TRUE;
+	}
+
 
 	// replaces (r) (c) (tm) (sm) (p) (R) (C) (TM) (SM) (P) with ® © ™ ℠ ℗
 	function set_smart_marks($on = TRUE) {
@@ -289,6 +503,12 @@ class phpTypography {
 	// Em and En dashes are wrapped in thin spaces
 	function set_dash_spacing($on = TRUE) {
 		$this->settings["dashSpacing"] = $on;
+		return TRUE;
+	}
+	
+	// Remove extra space Characters
+	function set_space_collapse($on = TRUE) {
+		$this->settings["spaceCollapse"] = $on;
 		return TRUE;
 	}
 
@@ -517,6 +737,29 @@ class phpTypography {
 		return $results;
 	}
 
+	#	Returns:	ARRAY of supported hyphenation languages in the form array( language code => language name)
+	function get_diacritic_languages() {
+		$languages = array();
+		$langDir = dirname(__FILE__)."/diacritics/";
+		$handler = opendir($langDir);
+		
+		// read all files in directory
+		while ($file = readdir($handler)) {
+			// we only want the php files
+			if (substr($file, -4) == ".php") {
+				$fileContent = file_get_contents($langDir.$file);
+				preg_match('/\$diacriticLanguage\s*=\s*((".+")|(\'.+\'))\s*;/', $fileContent, $matches);
+				$languageName = substr($matches[1], 1, -1);
+				$languageCode = substr($file, 0, -4);
+				$results[$languageCode] = $languageName;
+			}
+		}
+		closedir($handler);
+
+		asort($results);
+		return $results;
+	}
+
 	#	Action:		modifies $html according to the defined settings
 	#	Returns:	processed $html
 	function process($html, $isTitle = FALSE) {
@@ -549,6 +792,7 @@ class phpTypography {
 
 			// modify anything that requires adjacent text awareness here
 			$unlockedText = $this->smart_math($unlockedText);
+			$unlockedText = $this->smart_diacritics($unlockedText);
 			$unlockedText = $this->smart_quotes($unlockedText);
 			$unlockedText = $this->smart_dashes($unlockedText);
 			$unlockedText = $this->smart_ellipses($unlockedText);
@@ -577,10 +821,12 @@ class phpTypography {
 			$this->parsedText->update($parsedMixedWords+$parsedWords+$parsedOther);
 			$unlockedText = $this->parsedText->unload();
 			
+			//some final space manipulation
+			$unlockedText = $this->dewidow($unlockedText);
+			$unlockedText = $this->space_collapse($unlockedText);
+
 			//everything that requires HTML injection occurs here (functions above assume tag-free content)
 			//pay careful attention to functions below for tolerance of injected tags
-			$unlockedText = $this->dewidow($unlockedText);
-			
 			$unlockedText = $this->smart_ordinal_suffix($unlockedText);	// call before "style_numbers" and "smart_fractions"	
 			$unlockedText = $this->smart_exponents($unlockedText); // call before "style_numbers"
 			$unlockedText = $this->smart_fractions($unlockedText); // call before "style_numbers" and after "smart_ordinal_suffix"
@@ -656,6 +902,27 @@ class phpTypography {
 	function smart_quotes($parsedHTMLtoken) {
 		if(!isset($this->settings["smartQuotes"]) || !$this->settings["smartQuotes"]) return $parsedHTMLtoken;
 
+		$nonEnglishWordCharacters = "
+					[0-9A-Za-z]|\x{00c0}|\x{00c1}|\x{00c2}|\x{00c3}|\x{00c4}|\x{00c5}|\x{00c6}|\x{00c7}|\x{00c8}|\x{00c9}|
+					\x{00ca}|\x{00cb}|\x{00cc}|\x{00cd}|\x{00ce}|\x{00cf}|\x{00d0}|\x{00d1}|\x{00d2}|\x{00d3}|\x{00d4}|
+					\x{00d5}|\x{00d6}|\x{00d8}|\x{00d9}|\x{00da}|\x{00db}|\x{00dc}|\x{00dd}|\x{00de}|\x{00df}|\x{00e0}|
+					\x{00e1}|\x{00e2}|\x{00e3}|\x{00e4}|\x{00e5}|\x{00e6}|\x{00e7}|\x{00e8}|\x{00e9}|\x{00ea}|\x{00eb}|
+					\x{00ec}|\x{00ed}|\x{00ee}|\x{00ef}|\x{00f0}|\x{00f1}|\x{00f2}|\x{00f3}|\x{00f4}|\x{00f5}|\x{00f6}|
+					\x{00f8}|\x{00f9}|\x{00fa}|\x{00fb}|\x{00fc}|\x{00fd}|\x{00fe}|\x{00ff}|\x{0100}|\x{0101}|\x{0102}|
+					\x{0103}|\x{0104}|\x{0105}|\x{0106}|\x{0107}|\x{0108}|\x{0109}|\x{010a}|\x{010b}|\x{010c}|\x{010d}|
+					\x{010e}|\x{010f}|\x{0110}|\x{0111}|\x{0112}|\x{0113}|\x{0114}|\x{0115}|\x{0116}|\x{0117}|\x{0118}|
+					\x{0119}|\x{011a}|\x{011b}|\x{011c}|\x{011d}|\x{011e}|\x{011f}|\x{0120}|\x{0121}|\x{0122}|\x{0123}|
+					\x{0124}|\x{0125}|\x{0126}|\x{0127}|\x{0128}|\x{0129}|\x{012a}|\x{012b}|\x{012c}|\x{012d}|\x{012e}|
+					\x{012f}|\x{0130}|\x{0131}|\x{0132}|\x{0133}|\x{0134}|\x{0135}|\x{0136}|\x{0137}|\x{0138}|\x{0139}|
+					\x{013a}|\x{013b}|\x{013c}|\x{013d}|\x{013e}|\x{013f}|\x{0140}|\x{0141}|\x{0142}|\x{0143}|\x{0144}|
+					\x{0145}|\x{0146}|\x{0147}|\x{0148}|\x{0149}|\x{014a}|\x{014b}|\x{014c}|\x{014d}|\x{014e}|\x{014f}|
+					\x{0150}|\x{0151}|\x{0152}|\x{0153}|\x{0154}|\x{0155}|\x{0156}|\x{0157}|\x{0158}|\x{0159}|\x{015a}|
+					\x{015b}|\x{015c}|\x{015d}|\x{015e}|\x{015f}|\x{0160}|\x{0161}|\x{0162}|\x{0163}|\x{0164}|\x{0165}|
+					\x{0166}|\x{0167}|\x{0168}|\x{0169}|\x{016a}|\x{016b}|\x{016c}|\x{016d}|\x{016e}|\x{016f}|\x{0170}|
+					\x{0171}|\x{0172}|\x{0173}|\x{0174}|\x{0175}|\x{0176}|\x{0177}|\x{0178}|\x{0179}|\x{017a}|\x{017b}|
+					\x{017c}|\x{017d}|\x{017e}|\x{017f}
+					";
+
 		//need to get context of adjacent characters outside adjacent inline tags or HTML comment
 		//if we have adjacent characters add them to the text
 		$nextChr = "";
@@ -696,7 +963,8 @@ class phpTypography {
 		$parsedHTMLtoken["value"] = preg_replace("/(?<=\s|\A),(?=\S)/", $this->chr["singleLow9Quote"], $parsedHTMLtoken["value"]); //like _,¿hola?'_
 		
 		// apostrophes
-		$parsedHTMLtoken["value"] = preg_replace("/(?<=\w)'(?=\w)/u", $this->chr["apostrophe"], $parsedHTMLtoken["value"]);		$parsedHTMLtoken["value"] = preg_replace("/'(\d\d\b)/", $this->chr["apostrophe"].'$1', $parsedHTMLtoken["value"]); // decades: '98
+		$parsedHTMLtoken["value"] = preg_replace("/(?<=[\w|$nonEnglishWordCharacters])'(?=[\w|$nonEnglishWordCharacters])/u", $this->chr["apostrophe"], $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/'(\d\d\b)/", $this->chr["apostrophe"].'$1', $parsedHTMLtoken["value"]); // decades: '98
 		$exceptions = array("'tain".$this->chr["apostrophe"]."t", "'twere", "'twas", "'tis", "'til", "'bout", "'nuff", "'round", "'cause", "'splainin");
 		$replacements = array($this->chr["apostrophe"]."tain".$this->chr["apostrophe"]."t", $this->chr["apostrophe"]."twere", $this->chr["apostrophe"]."twas", $this->chr["apostrophe"]."tis", $this->chr["apostrophe"]."til", $this->chr["apostrophe"]."bout", $this->chr["apostrophe"]."nuff", $this->chr["apostrophe"]."round", $this->chr["apostrophe"]."cause", $this->chr["apostrophe"]."splainin");
 		$parsedHTMLtoken["value"] = str_replace($exceptions, $replacements, $parsedHTMLtoken["value"]);
@@ -705,12 +973,12 @@ class phpTypography {
 		$quoteRules = array("['", "{'", "('", "']", "'}", "')", "[\"", "{\"", "(\"", "\"]", "\"}", "\")", "\"'", "'\"");
 		$quoteRulesReplace = array("[".$this->chr["singleQuoteOpen"], "{".$this->chr["singleQuoteOpen"], "(".$this->chr["singleQuoteOpen"], $this->chr["singleQuoteClose"]."]", $this->chr["singleQuoteClose"]."}", $this->chr["singleQuoteClose"].")", "[".$this->chr["doubleQuoteOpen"], "{".$this->chr["doubleQuoteOpen"], "(".$this->chr["doubleQuoteOpen"], $this->chr["doubleQuoteClose"]."]", $this->chr["doubleQuoteClose"]."}", $this->chr["doubleQuoteClose"].")", $this->chr["doubleQuoteOpen"].$this->chr["singleQuoteOpen"], $this->chr["singleQuoteClose"].$this->chr["doubleQuoteClose"]);
 		$parsedHTMLtoken["value"] =str_replace($quoteRules, $quoteRulesReplace, $parsedHTMLtoken["value"]);
-		$parsedHTMLtoken["value"] = preg_replace("/'(?=\w)/u", $this->chr["singleQuoteOpen"], $parsedHTMLtoken["value"]);
-		$parsedHTMLtoken["value"] = preg_replace("/(?<=\w)'/u", $this->chr["singleQuoteClose"], $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/'(?=[\w|$nonEnglishWordCharacters])/u", $this->chr["singleQuoteOpen"], $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/(?<=[\w|$nonEnglishWordCharacters])'/u", $this->chr["singleQuoteClose"], $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = preg_replace("/(?<=\s|\A)'(?=\S)/", $this->chr["singleQuoteOpen"], $parsedHTMLtoken["value"]); //like _'¿hola?'_
 		$parsedHTMLtoken["value"] = preg_replace("/(?<=\S)'(?=\s|\Z)/", $this->chr["singleQuoteClose"], $parsedHTMLtoken["value"]);
-		$parsedHTMLtoken["value"] = preg_replace("/\"(?=\w)/u", $this->chr["doubleQuoteOpen"], $parsedHTMLtoken["value"]);
-		$parsedHTMLtoken["value"] = preg_replace("/(?<=\w)\"/u", $this->chr["doubleQuoteClose"], $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/\"(?=[\w|$nonEnglishWordCharacters])/u", $this->chr["doubleQuoteOpen"], $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/(?<=[\w|$nonEnglishWordCharacters])\"/u", $this->chr["doubleQuoteClose"], $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = preg_replace("/(?<=\s|\A)\"(?=\S)/", $this->chr["doubleQuoteOpen"], $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = preg_replace("/(?<=\S)\"(?=\s|\Z)/", $this->chr["doubleQuoteClose"], $parsedHTMLtoken["value"]);
 
@@ -723,10 +991,10 @@ class phpTypography {
 		$encodings = array("ASCII","UTF-8");
 		$e = mb_detect_encoding($parsedHTMLtoken["value"]."a", $encodings);// ."a" is a hack; see http://www.php.net/manual/en/function.mb-detect-encoding.php#81936
 		if(!isset($e) || $e == "") $e = "ASCII";
-		if($prevChr) {
+		if($prevChr != "") {
 			$parsedHTMLtoken["value"] = mb_substr($parsedHTMLtoken["value"], 1, mb_strlen($parsedHTMLtoken["value"], $e), $e);
 		}
-		if($nextChr) {
+		if($nextChr != "") {
 			$parsedHTMLtoken["value"] = mb_substr($parsedHTMLtoken["value"], 0, mb_strlen($parsedHTMLtoken["value"], $e)-1, $e);
 		}
 				
@@ -737,13 +1005,34 @@ class phpTypography {
 	function smart_dashes($parsedHTMLtoken) {
 		if(!isset($this->settings["smartDashes"]) || !$this->settings["smartDashes"]) return $parsedHTMLtoken;
 
+		$nonEnglishWordCharacters = "
+					[0-9A-Za-z]|\x{00c0}|\x{00c1}|\x{00c2}|\x{00c3}|\x{00c4}|\x{00c5}|\x{00c6}|\x{00c7}|\x{00c8}|\x{00c9}|
+					\x{00ca}|\x{00cb}|\x{00cc}|\x{00cd}|\x{00ce}|\x{00cf}|\x{00d0}|\x{00d1}|\x{00d2}|\x{00d3}|\x{00d4}|
+					\x{00d5}|\x{00d6}|\x{00d8}|\x{00d9}|\x{00da}|\x{00db}|\x{00dc}|\x{00dd}|\x{00de}|\x{00df}|\x{00e0}|
+					\x{00e1}|\x{00e2}|\x{00e3}|\x{00e4}|\x{00e5}|\x{00e6}|\x{00e7}|\x{00e8}|\x{00e9}|\x{00ea}|\x{00eb}|
+					\x{00ec}|\x{00ed}|\x{00ee}|\x{00ef}|\x{00f0}|\x{00f1}|\x{00f2}|\x{00f3}|\x{00f4}|\x{00f5}|\x{00f6}|
+					\x{00f8}|\x{00f9}|\x{00fa}|\x{00fb}|\x{00fc}|\x{00fd}|\x{00fe}|\x{00ff}|\x{0100}|\x{0101}|\x{0102}|
+					\x{0103}|\x{0104}|\x{0105}|\x{0106}|\x{0107}|\x{0108}|\x{0109}|\x{010a}|\x{010b}|\x{010c}|\x{010d}|
+					\x{010e}|\x{010f}|\x{0110}|\x{0111}|\x{0112}|\x{0113}|\x{0114}|\x{0115}|\x{0116}|\x{0117}|\x{0118}|
+					\x{0119}|\x{011a}|\x{011b}|\x{011c}|\x{011d}|\x{011e}|\x{011f}|\x{0120}|\x{0121}|\x{0122}|\x{0123}|
+					\x{0124}|\x{0125}|\x{0126}|\x{0127}|\x{0128}|\x{0129}|\x{012a}|\x{012b}|\x{012c}|\x{012d}|\x{012e}|
+					\x{012f}|\x{0130}|\x{0131}|\x{0132}|\x{0133}|\x{0134}|\x{0135}|\x{0136}|\x{0137}|\x{0138}|\x{0139}|
+					\x{013a}|\x{013b}|\x{013c}|\x{013d}|\x{013e}|\x{013f}|\x{0140}|\x{0141}|\x{0142}|\x{0143}|\x{0144}|
+					\x{0145}|\x{0146}|\x{0147}|\x{0148}|\x{0149}|\x{014a}|\x{014b}|\x{014c}|\x{014d}|\x{014e}|\x{014f}|
+					\x{0150}|\x{0151}|\x{0152}|\x{0153}|\x{0154}|\x{0155}|\x{0156}|\x{0157}|\x{0158}|\x{0159}|\x{015a}|
+					\x{015b}|\x{015c}|\x{015d}|\x{015e}|\x{015f}|\x{0160}|\x{0161}|\x{0162}|\x{0163}|\x{0164}|\x{0165}|
+					\x{0166}|\x{0167}|\x{0168}|\x{0169}|\x{016a}|\x{016b}|\x{016c}|\x{016d}|\x{016e}|\x{016f}|\x{0170}|
+					\x{0171}|\x{0172}|\x{0173}|\x{0174}|\x{0175}|\x{0176}|\x{0177}|\x{0178}|\x{0179}|\x{017a}|\x{017b}|
+					\x{017c}|\x{017d}|\x{017e}|\x{017f}
+					";
+
 		$parsedHTMLtoken["value"] = str_replace("---", $this->chr["emDash"], $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = str_replace(" -- ", " ".$this->chr["emDash"]." ", $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = str_replace("--", $this->chr["enDash"], $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = str_replace(" - ", " ".$this->chr["emDash"]." ", $parsedHTMLtoken["value"]);
 
-		$parsedHTMLtoken["value"] = preg_replace("/(\A|\s)\-(\w)/u", '$1'.$this->chr["enDash"].'$2', $parsedHTMLtoken["value"]);
-		$parsedHTMLtoken["value"] = preg_replace("/(\w)\-(\Z|\s)/u", '$1'.$this->chr["enDash"].'$2', $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/(\A|\s)\-([\w|$nonEnglishWordCharacters])/u", '$1'.$this->chr["enDash"].'$2', $parsedHTMLtoken["value"]);
+		$parsedHTMLtoken["value"] = preg_replace("/([\w|$nonEnglishWordCharacters])\-(\Z|\s)/u", '$1'.$this->chr["enDash"].'$2', $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = preg_replace("/(\b\d+)\-(\d+\b)/", '$1'.$this->chr["enDash"].'$2', $parsedHTMLtoken["value"]);
 		$parsedHTMLtoken["value"] = preg_replace("/(\b\d{3})".$this->chr["enDash"]."(\d{4}\b)/", '$1'.$this->chr["noBreakHyphen"].'$2', $parsedHTMLtoken["value"]); // phone numbers
 		$parsedHTMLtoken["value"] = str_replace("xn".$this->chr["enDash"], "xn--", $parsedHTMLtoken["value"]);
@@ -832,6 +1121,27 @@ class phpTypography {
 		$parsedHTMLtoken["value"] = str_replace(array("...",     ". . .",), $this->chr["ellipses"], $parsedHTMLtoken["value"]);
 		return $parsedHTMLtoken;
 	}
+
+	//expecting parsedHTML token of type text
+	function smart_diacritics($parsedHTMLtoken) {
+		if(!isset($this->settings["smartDiacritics"]) || !$this->settings["smartDiacritics"]) return $parsedHTMLtoken;
+
+		if( isset($this->settings["diacriticCustomReplacements"]) && ( count($this->settings["diacriticCustomReplacements"]) > 0 ) ) {
+			foreach($this->settings["diacriticCustomReplacements"] as $needle => $replacement) {
+				$parsedHTMLtoken["value"] = preg_replace("/\b$needle\b/", $replacement, $parsedHTMLtoken["value"]);
+			}
+		}
+		if( isset($this->settings["diacriticWords"]) && ( count($this->settings["diacriticWords"]) > 0 ) ) {
+			foreach($this->settings["diacriticWords"] as $needle => $replacement) {
+				$parsedHTMLtoken["value"] = preg_replace("/\b$needle\b/", $replacement, $parsedHTMLtoken["value"]);
+			}
+		}
+
+		return $parsedHTMLtoken;
+	}
+
+
+
 
 	//expecting parsedHTML token of type text
 	function smart_marks($parsedHTMLtoken) {
@@ -1125,10 +1435,10 @@ class phpTypography {
 		$encodings = array("ASCII","UTF-8");
 		$e = mb_detect_encoding($parsedHTMLtoken["value"]."a", $encodings);// ."a" is a hack; see http://www.php.net/manual/en/function.mb-detect-encoding.php#81936
 		if(!isset($e) || $e == "") $e = "ASCII";
-		if($prevChr) {
+		if($prevChr != "") {
 			$parsedHTMLtoken["value"] = mb_substr($parsedHTMLtoken["value"], 1, mb_strlen($parsedHTMLtoken["value"], $e), $e);
 		}
-		if($nextChr) {
+		if($nextChr != "") {
 			$parsedHTMLtoken["value"] = mb_substr($parsedHTMLtoken["value"], 0, mb_strlen($parsedHTMLtoken["value"], $e)-1, $e);
 		}
 
@@ -1179,6 +1489,102 @@ class phpTypography {
 			
 		return $parsedHTMLtoken;
 	}
+
+
+
+	//expecting parsedHTML token of type text
+	function space_collapse($parsedHTMLtoken) {
+		if(!isset($this->settings["spaceCollapse"]) || !$this->settings["spaceCollapse"]) return $parsedHTMLtoken;
+
+
+		# find the HTML character representation for the following characters:
+		#		tab | line feed | carriage return | space | non-breaking space | ethiopic wordspace
+		#		ogham space mark | en quad space | em quad space | en-space | three-per-em space
+		#		four-per-em space | six-per-em space | figure space | punctuation space | em-space
+		#		thin space | hair space | narrow no-break space
+		#		medium mathematical space | ideographic space
+		# Some characters are used inside words, we will not count these as a space for the purpose
+		# of finding word boundaries:
+		#		zero-width-space ("&#8203;", "&#x200b;")
+		#		zero-width-joiner ("&#8204;", "&#x200c;", "&zwj;")
+		#		zero-width-non-joiner ("&#8205;", "&#x200d;", "&zwnj;")
+
+		$htmlSpaces = '
+			\x{00a0}		# no-break space
+			|
+			\x{1361}		# ethiopic wordspace
+			|
+			\x{2000}		# en quad-space
+			|
+			\x{2001}		# em quad-space
+			|
+			\x{2002}		# en space
+			|
+			\x{2003}		# em space
+			|
+			\x{2004}		# three-per-em space
+			|
+			\x{2005}		# four-per-em space
+			|
+			\x{2006}		# six-per-em space
+			|
+			\x{2007}		# figure space
+			|
+			\x{2008}		# punctuation space
+			|
+			\x{2009}		# thin space
+			|
+			\x{200a}		# hair space
+			|
+			\x{200b}		# zero-width space
+			|
+			\x{200c}		# zero-width joiner
+			|
+			\x{200d}		# zero-width non-joiner
+			|
+			\x{202f}		# narrow no-break space
+			|
+			\x{205f}		# medium mathematical space
+			|
+			\x{3000}		# ideographic space
+			'; // required modifiers: x (multiline pattern) i (case insensitive) u (utf8)
+
+		// normal spacing
+	    $parsedHTMLtoken["value"] = preg_replace(
+			"/\s+/xu", 
+			" ", 
+			$parsedHTMLtoken["value"]
+			);
+		
+		// nbsp get's priority.  if nbsp exists in a string of spaces, it collapses to nbsp
+	    $parsedHTMLtoken["value"] = preg_replace(
+			"/(?:\s|$htmlSpaces)*".$this->chr["noBreakSpace"]."(?:\s|$htmlSpaces)*/xu", 
+			$this->chr["noBreakSpace"], 
+			$parsedHTMLtoken["value"]
+			);
+		
+		// for any other spaceing, replace with the first occurance of an unusual space character
+	    $parsedHTMLtoken["value"] = preg_replace(
+			"/(?:\s)*($htmlSpaces)(?:\s|$htmlSpaces)*/xu", 
+			"$1", 
+			$parsedHTMLtoken["value"]
+			);
+
+		// remove all spacing at beginning of block level elements
+		if(!isset($parsedHTMLtoken["prevChr"]) || $parsedHTMLtoken["prevChr"] == NULL) { // we have the first text in a block level element
+	    $parsedHTMLtoken["value"] = preg_replace(
+			"/\A(?:\s|$htmlSpaces)+/xu", 
+			"", 
+			$parsedHTMLtoken["value"]
+			);
+		}
+/**/
+		
+		return $parsedHTMLtoken;
+	}
+
+
+
 
 	//expecting parsedHTML token of type text
 	function unit_spacing($parsedHTMLtoken) {
@@ -1309,12 +1715,15 @@ class phpTypography {
 		//   with that, we will assert that widows should never be hyphenated or wrapped
 		//   as such, we will strip soft hyphens and zero-width-spaces
 		$widow[4] = str_replace($this->chr["zeroWidthSpace"], "", $widow[4]);
-		$widow[4] = str_replace($this->chr["softHyphen"], "", $widow[4]);							
-		$widow[5] = preg_replace("/\s+/", $this->chr["noBreakSpace"], $widow[5]);
+		$widow[4] = str_replace($this->chr["softHyphen"], "", $widow[4]);
+						
+//		$widow[5] = preg_replace("/\s+/", $this->chr["noBreakSpace"], $widow[5]);
+		$widow[5] = mb_ereg_replace("/\s+/", $this->chr["noBreakSpace"], $widow[5], "p");; // fixes multibyte unicode corruption that occurs in some instances in the line above.
+		
 		$widow[5] = str_replace($this->chr["zeroWidthSpace"], "", $widow[5]);
 		$widow[5] = str_replace($this->chr["softHyphen"], "", $widow[5]);
 		
-		// eject if widows neighbor is proceeded by a no break space
+		// eject if widows neighbor is proceeded by a no break space (the pulled text would be too long)
 		if($widow[1] == "" || strstr($this->chr["noBreakSpace"], $widow[1])) return $widow[1].$widow[2].$widow[3].$widow[4].$widow[5];
 		
 		if($multibyte) {
@@ -1535,8 +1944,12 @@ class phpTypography {
 	function style_initial_quotes($parsedHTMLtoken, $isTitle = FALSE) {
 		if(!isset($this->settings["styleInitialQuotes"]) || !$this->settings["styleInitialQuotes"] || !isset($this->settings["initialQuoteTags"]) || !$this->settings["initialQuoteTags"]) return $parsedHTMLtoken;
 	
-		if(!isset($parsedHTMLtoken["prevChr"])) { // we have the first text in a block level element
-			$firstChr = mb_substr($parsedHTMLtoken["value"],0,1);
+		if(!isset($parsedHTMLtoken["prevChr"]) || $parsedHTMLtoken["prevChr"] == NULL) { // we have the first text in a block level element
+
+			$e = mb_detect_encoding($parsedHTMLtoken["value"]."a", $encodings);// ."a" is a hack; see http://www.php.net/manual/en/function.mb-detect-encoding.php#81936
+			if(!isset($e) || $e == "") $e = "ASCII";
+
+			$firstChr = mb_substr($parsedHTMLtoken["value"], 0, 1, $e);
 			if($firstChr == "'" || $firstChr == $this->chr["singleQuoteOpen"] || $firstChr == $this->chr["singleLow9Quote"] || $firstChr == "," || $firstChr == "\"" || $firstChr == $this->chr["doubleQuoteOpen"] || $firstChr == $this->chr["guillemetOpen"] || $firstChr == $this->chr["guillemetClose"] || $firstChr == $this->chr["doubleLow9Quote"]) {
 
 				$style = FALSE;
@@ -1556,9 +1969,9 @@ class phpTypography {
 				
 				if($style) {
 					if($firstChr == "'" || $firstChr == $this->chr["singleQuoteOpen"] || $firstChr == $this->chr["singleLow9Quote"] || $firstChr == ",") {
-						$parsedHTMLtoken["value"] = '<span class="quo">'.$firstChr.'</span>'.mb_substr($parsedHTMLtoken["value"],1);
+						$parsedHTMLtoken["value"] = '<span class="quo">'.$firstChr.'</span>'.mb_substr($parsedHTMLtoken["value"], 1, mb_strlen($parsedHTMLtoken["value"], $e), $e);
 					} else { // double quotes or guillemets
-						$parsedHTMLtoken["value"] = '<span class="dquo">'.$firstChr.'</span>'.mb_substr($parsedHTMLtoken["value"],1);
+						$parsedHTMLtoken["value"] = '<span class="dquo">'.$firstChr.'</span>'.mb_substr($parsedHTMLtoken["value"], 1, mb_strlen($parsedHTMLtoken["value"], $e), $e);
 					}
 				}
 			}

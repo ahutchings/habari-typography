@@ -52,17 +52,37 @@ HELP;
                 $ga->append('textmulti', 'classes_to_ignore', 'typography__classes_to_ignore', _t('Classes where typography of children will be untouched.'));
                 $ga->append('textmulti', 'ids_to_ignore', 'typography__ids_to_ignore', _t('IDs where typography of children will be untouched.'));
 
+                // available styles for smart_quotes_primary and smart_quotes_secondary
+                $smart_quotes_styles = array(
+                    "doubleCurled" => "“foo”",
+                    "doubleCurledReversed" => "”foo”",
+                    "doubleLow9" => "„foo”",
+                    "doubleLow9Reversed" => "„foo“",
+                    "singleCurled" => "‘foo’",
+                    "singleCurledReversed" => "’foo’",
+                    "singleLow9" => "‚foo’",
+                    "singleLow9Reversed" => "‚foo‘",
+                    "doubleGuillemetsFrench" => "« foo »",
+                    "doubleGuillemets" => "«foo»",
+                    "doubleGuillemetsReversed" => "»foo«",
+                    "singleGuillemets" => "‹foo›",
+                    "singleGuillemetsReversed" => "›foo‹",
+                    "cornerBrackets" => "「foo」",
+                    "whiteCornerBracket" => "『foo』"
+                );
+
                 $sc = $form->append('fieldset', 'smart_characters', _t('Smart Characters'));
                 $sc->append('checkbox', 'smart_quotes', 'typography__smart_quotes', _t('Curl Quotemarks'));
-                $sc->append('select', 'smart_quotes_language', 'typography__smart_quotes_language', _t('Language preference for curling quotemarks.'));
-                $sc->smart_quotes_language->options = array(
-                    'en' => 'English style quotes',
-                    'de' => 'German style quotes',
-                    'fr' => 'French guillemets',
-                    'fr-reverse' => 'Reverse French guillemets'
-                );
+                $sc->append('select', 'smart_quotes_primary', 'typography__smart_quotes_primary', _t('Primary quotemarks style.'));
+                $sc->smart_quotes_primary->options = $smart_quotes_styles;
+                $sc->append('select', 'smart_quotes_secondary', 'typography__smart_quotes_secondary', _t('Secondary quotemarks style.'));
+                $sc->smart_quotes_secondary->options = $smart_quotes_styles;
                 $sc->append('checkbox', 'smart_dashes', 'typography__smart_dashes', _t('Replace "a--a" with <a href="http://en.wikipedia.org/wiki/Dash#En_dash">en dash</a> " -- " and "---" with <a href="http://en.wikipedia.org/wiki/Dash#Em_dash">em dash</a>.'));
                 $sc->append('checkbox', 'smart_ellipses', 'typography__smart_ellipses', _t('Replace "..." with "…".'));
+                $sc->append('checkbox', 'smart_diacritics', 'typography__smart_diacritics', _t('Replace "creme brulee" with "crème brûlée".'));
+                $sc->append('select', 'diacritic_language', 'typography__diacritic_language', _t('Language used for diacritical marks.'));
+                $sc->diacritic_language->options = $this->typo->get_diacritic_languages();
+                $sc->append('textarea', 'diacritic_custom_replacements', 'typography__diacritic_custom_replacements', _t('Diacritic custom replacements. Must be formatted as `"needle"=>"replacement","needle"=>"replacement",....'));
                 $sc->append('checkbox', 'smart_marks', 'typography__smart_marks', _t('Replace (r) (c) (tm) (sm) (p) (R) (C) (TM) (SM) (P) with ® © ™ ℠ ℗.'));
                 $sc->append('checkbox', 'smart_ordinal_suffix', 'typography__smart_ordinal_suffix', _t('Wrap numbers in <code>&lt;span class="numbers"&gt;</code>.'));
                 $sc->append('checkbox', 'smart_math', 'typography__smart_math', _t('Use smart characters and spacing in math equations.'));
@@ -82,6 +102,7 @@ HELP;
                 $ss->append('checkbox', 'url_wrap', 'typography__url_wrap', _t('Enable wrapping of URLs.'));
                 $ss->append('checkbox', 'email_wrap', 'typography__email_wrap', _t('Enable wrapping of email addresses.'));
                 $ss->append('text', 'min_after_url_wrap', 'typography__min_after_url_wrap', _t('Minimum character requirement after a url wrapping point.'));
+                $ss->append('checkbox', 'space_collapse', 'typography__space_collapse', _t('Remove extra space characters.'));
 
                 $cs = $form->append('fieldset', 'character_styling', _t('Character Styling'));
                 $cs->append('checkbox', 'style_ampersands', 'typography__style_ampersands', _t('Wrap ampersands in <code>&lt;span class="amp"&gt;</code>.'));
@@ -121,9 +142,13 @@ HELP;
 
             // smart characters
             'smart_quotes' => true,
-            'smart_quotes_language' => 'en',
+            'smart_quotes_primary' => 'doubleCurled',
+            'smart_quotes_secondary' => 'singleCurled',
             'smart_dashes' => true,
             'smart_ellipses' => true,
+            'smart_diacritics' => true,
+            'diacritic_language' => 'en-US',
+            'diacritic_custom_replacements' => '',
             'smart_marks' => true,
             'smart_ordinal_suffix' => true,
             'smart_math' => true,
@@ -143,6 +168,7 @@ HELP;
             'url_wrap' => true,
             'email_wrap' => true,
             'min_after_url_wrap' => 5,
+            'space_collapse' => true,
 
             // character styling
             'style_ampersands' => true,
@@ -244,9 +270,13 @@ HELP;
 
         // smart characters
         $typo->set_smart_quotes($opts['smart_quotes']);
-        $typo->set_smart_quotes_language($opts['smart_quotes_language']);
+        $typo->set_smart_quotes_primary($opts['smart_quotes_primary']);
+        $typo->set_smart_quotes_secondary($opts['smart_quotes_secondary']);
         $typo->set_smart_dashes($opts['smart_dashes']);
         $typo->set_smart_ellipses($opts['smart_ellipses']);
+        $typo->set_smart_diacritics($opts['smart_diacritics']);
+        $typo->set_diacritic_language($opts['diacritic_language']);
+        $typo->set_diacritic_custom_replacements($opts['diacritic_custom_replacements']);
         $typo->set_smart_marks($opts['smart_marks']);
         $typo->set_smart_ordinal_suffix($opts['smart_ordinal_suffix']);
         $typo->set_smart_math($opts['smart_math']);
@@ -266,6 +296,7 @@ HELP;
         $typo->set_url_wrap($opts['url_wrap']);
         $typo->set_email_wrap($opts['email_wrap']);
         $typo->set_min_after_url_wrap($opts['min_after_url_wrap']);
+        $typo->set_space_collapse($opts['space_collapse']);
 
         // character styling
         $typo->set_style_ampersands($opts['style_ampersands']);
