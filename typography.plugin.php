@@ -13,7 +13,7 @@ class Typography extends Plugin
             'license' => 'Apache License 2.0',
             'author' => 'Andrew Hutchings',
             'authorurl' => 'http://andrewhutchings.com/',
-            'version' => '0.0.4'
+            'version' => '0.0.5'
         );
     }
 
