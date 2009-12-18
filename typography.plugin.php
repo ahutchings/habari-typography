@@ -45,16 +45,14 @@ HELP;
         if ($plugin_id == $this->plugin_id()) {
             if ($action == _t('Configure')) {
 
-                $class_name = strtolower(get_class($this));
+                $form = new FormUI(strtolower(get_class($this)));
 
-                $form = new FormUI($class_name);
-
-                $ga = $form->append('fieldset', 'general_attributes', 'General Attributes');
+                $ga = $form->append('fieldset', 'general_attributes', _t('General Attributes'));
                 $ga->append('textmulti', 'tags_to_ignore', 'typography__tags_to_ignore', _t('Tags where typography of children will be untouched.'));
                 $ga->append('textmulti', 'classes_to_ignore', 'typography__classes_to_ignore', _t('Classes where typography of children will be untouched.'));
                 $ga->append('textmulti', 'ids_to_ignore', 'typography__ids_to_ignore', _t('IDs where typography of children will be untouched.'));
 
-                $sc = $form->append('fieldset', 'smart_characters', 'Smart Characters');
+                $sc = $form->append('fieldset', 'smart_characters', _t('Smart Characters'));
                 $sc->append('checkbox', 'smart_quotes', 'typography__smart_quotes', _t('Curl Quotemarks'));
                 $sc->append('select', 'smart_quotes_language', 'typography__smart_quotes_language', _t('Language preference for curling quotemarks.'));
                 $sc->smart_quotes_language->options = array(
@@ -71,7 +69,7 @@ HELP;
                 $sc->append('checkbox', 'smart_fractions', 'typography__smart_fractions', _t('Replace 1/4  with <sup>1</sup>&#8260;<sub>4</sub>.'));
                 $sc->append('checkbox', 'smart_exponents', 'typography__smart_exponents', _t('Replace 4^2  with 4<sup>2</sup>.'));
 
-                $ss = $form->append('fieldset', 'smart_spacing', 'Smart Spacing');
+                $ss = $form->append('fieldset', 'smart_spacing', _t('Smart Spacing'));
                 $ss->append('checkbox', 'single_character_word_spacing', 'typography__single_character_word_spacing', _t('Force single character words to next line with insertion of &amp;nbsp;.'));
                 $ss->append('checkbox', 'fraction_spacing', 'typography__fraction_spacing', _t('Keep fractions together with insertion of &amp;nbsp;.'));
                 $ss->append('checkbox', 'unit_spacing', 'typography__unit_spacing', _t('Keep units and values are together with insertion of &amp;nbsp;.'));
@@ -85,14 +83,14 @@ HELP;
                 $ss->append('checkbox', 'email_wrap', 'typography__email_wrap', _t('Enable wrapping of email addresses.'));
                 $ss->append('text', 'min_after_url_wrap', 'typography__min_after_url_wrap', _t('Minimum character requirement after a url wrapping point.'));
 
-                $cs = $form->append('fieldset', 'character_styling', 'Character Styling');
+                $cs = $form->append('fieldset', 'character_styling', _t('Character Styling'));
                 $cs->append('checkbox', 'style_ampersands', 'typography__style_ampersands', _t('Wrap ampersands in <code>&lt;span class="amp"&gt;</code>.'));
                 $cs->append('checkbox', 'style_caps', 'typography__style_caps', _t('Wrap consecutive capital letters (acronyms, etc.) in <code>&lt;span class=&quot;caps&quot;&gt;</code>.'));
                 $cs->append('checkbox', 'style_initial_quotes', 'typography__style_initial_quotes', _t('Wrap initial double quotes in <code>&lt;span class=&quot;dquo&quot;&gt;</code>, and initial single quotes in <code>&lt;span class=&quot;quo&quot;&gt;</code>.'));
                 $cs->append('checkbox', 'style_numbers', 'typography__style_numbers', _t('Wrap numbers in <code>&lt;span class="numbers"&gt;</code>.'));
                 $cs->append('textmulti', 'initial_quote_tags', 'typography__initial_quote_tags', _t('Tags where initial quotes and guillemets should be styled.'));
 
-                $hp = $form->append('fieldset', 'hyphenation', 'Hyphenation');
+                $hp = $form->append('fieldset', 'hyphenation', _t('Hyphenation'));
                 $hp->append('checkbox', 'hyphenation', 'typography__hyphenation', _t('Enable hyphenation of text.'));
                 $hp->append('select', 'hyphenation_language', 'typography__hyphenation_language', _t('Hyphenation language for text.'));
                 $hp->hyphenation_language->options = $this->typo->get_languages();
@@ -104,23 +102,16 @@ HELP;
                 $hp->append('checkbox', 'hyphenate_title_case', 'typography__hyphenate_title_case', _t('Hyphenate strings starting with a capital character.'));
                 $hp->append('textmulti', 'hyphenation_exceptions', 'typography__hyphenation_exceptions', _t('Custom word hyphenations (words with all hyphenation points marked with a hard hyphen).'));
 
-                $ao = $form->append('fieldset', 'additional_options', 'Additional Options');
+                $ao = $form->append('fieldset', 'additional_options', _t('Additional Options'));
                 $ao->append('checkbox', 'title_case', 'typography__title_case', _t( 'Attempt to properly capitalize post titles based on <a href="http://daringfireball.net/2008/05/title_case">rules</a> by John Gruber.'));
 
                 $form->append('submit', 'save', _t('Save'));
-
-                $form->on_success(array($this, 'updated_config'));
                 $form->out();
             }
         }
     }
 
-    public function updated_config($form)
-    {
-        $form->save();
-    }
-
-    public function get_default_options()
+    public function defaults()
     {
         $defaults = array(
             // general attributes
@@ -176,7 +167,7 @@ HELP;
         );
 
         foreach ($defaults as $k => $v) {
-            $plugin_defaults['typography__'.$k] = $v;
+            $plugin_defaults["typography__$k"] = $v;
         }
 
         return $plugin_defaults;
@@ -185,10 +176,7 @@ HELP;
     public function action_plugin_activation($file)
     {
         if (Plugins::id_from_file($file) == Plugins::id_from_file(__FILE__)) {
-
-            $options = $this->get_default_options();
-
-            foreach ($options as $option => $value) {
+            foreach ($this->defaults() as $option => $value) {
                 if (Options::get($option) == null) {
                     Options::set($option, $value);
                 }
@@ -198,9 +186,7 @@ HELP;
 
     public function filter($text)
     {
-        $text = $this->typo->process($text);
-
-        return $text;
+        return $this->typo->process($text);
     }
 
     public function filter_post_title_out($title)
@@ -214,29 +200,17 @@ HELP;
         return $title;
     }
 
-    public function filter_post_content_out($content)
+    public function alias()
     {
-        return $this->filter($content);
-    }
-
-    public function filter_post_excerpt_out($excerpt)
-    {
-        return $this->filter($excerpt);
-    }
-
-    public function filter_comment_content_out($comment)
-    {
-        return $this->filter($comment);
-    }
-
-    public function filter_comment_name_out($name)
-    {
-        return $this->filter($name);
-    }
-
-    public function filter_post_tags_out($tags)
-    {
-        return $this->filter($tags);
+        return array(
+            'filter' => array(
+                'filter_post_content_out',
+                'filter_post_excerpt_out',
+                'filter_post_tags_out',
+                'filter_comment_content_out',
+                'filter_comment_name_out'
+            )
+        );
     }
 
     /**
