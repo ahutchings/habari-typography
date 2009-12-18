@@ -406,7 +406,7 @@ class phpTypography {
 	//		an array formatted array(needle=>replacement, needle=>replacement...), or
 	//		a string formatted `"needle"=>"replacement","needle"=>"replacement",...`
 	function set_diacritic_custom_replacements($customReplacements = array()) {
-		if(!is_array($customReplacements)) 
+		if(!is_array($customReplacements)) {
 			$customReplacementChunks = preg_split("/,/", $customReplacements, -1, PREG_SPLIT_NO_EMPTY);
 			$customReplacements = array();
 			foreach($customReplacementChunks as $customReplacementChunk) {
@@ -432,6 +432,7 @@ class phpTypography {
 					$customReplacements[strip_tags(trim($key))] = strip_tags(trim($value));
 				}
 			}
+		}
 			
 		$this->settings["diacriticCustomReplacements"] = $customReplacements;
 		return TRUE;
